@@ -9,7 +9,7 @@ def start_menu():
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption('Task Manager - Start Menu')
 
-    font = pygame.font.Font(None, 36)
+    pixel_font = pygame.font.Font('grand9k_pixel/grand9k_pixel.ttf', 18)
     clock = pygame.time.Clock()
 
     buttons = []
@@ -38,7 +38,7 @@ def start_menu():
         screen.fill((255, 255, 255))
         pygame.display.flip()
 
-        input_box = InputBox(300, 150, 200, 50, 'Enter list name')
+        input_box = InputBox(300, 150, 200, 50, 'Enter list name', pixel_font)
         clock = pygame.time.Clock()
 
         def confirm_name():
@@ -48,8 +48,8 @@ def start_menu():
         def go_back():
             start_menu()
 
-        confirm_button = Button(300, 250, 200, 50, 'Confirm', confirm_name)
-        back_button = Button(300, 350, 200, 50, 'Back', go_back)
+        confirm_button = Button(300, 250, 200, 50, 'Confirm', confirm_name, pixel_font)
+        back_button = Button(300, 350, 200, 50, 'Back', go_back, pixel_font)
 
         while True:
             for event in pygame.event.get():
@@ -73,9 +73,9 @@ def start_menu():
         pygame.quit()
         sys.exit()
 
-    load_button = Button(300, 200, 200, 50, 'Load To-Do List', load_tasks)
-    new_button = Button(300, 300, 200, 50, 'Create New List', create_new_list)
-    exit_button = Button(300, 400, 200, 50, 'Exit', exit_app)
+    load_button = Button(300, 200, 200, 50, 'Load To-Do List', load_tasks, pixel_font)
+    new_button = Button(300, 300, 200, 50, 'Create New List', create_new_list, pixel_font)
+    exit_button = Button(300, 400, 200, 50, 'Exit', exit_app, pixel_font)
 
     buttons = [load_button, new_button, exit_button]
 
@@ -100,15 +100,15 @@ def file_selection_menu(files, callback):
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption('Task Manager - File Selection')
 
-    font = pygame.font.Font(None, 36)
+    pixel_font = pygame.font.Font('grand9k_pixel/grand9k_pixel.ttf', 18)
     clock = pygame.time.Clock()
     buttons = []
 
     for i, file in enumerate(files):
-        button = Button(300, 200 + i * 50, 200, 50, file[:-5], lambda f=file: callback(f))
+        button = Button(300, 200 + i * 50, 200, 50, file[:-5], lambda f=file: callback(f), pixel_font)
         buttons.append(button)
 
-    back_button = Button(300, 200 + len(files) * 50, 200, 50, 'Back', start_menu)
+    back_button = Button(300, 200 + len(files) * 50, 200, 50, 'Back', start_menu, pixel_font)
     buttons.append(back_button)
 
     while True:
@@ -131,7 +131,7 @@ def start_pygame_interface(manager, filename):
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption('Task Manager')
 
-    font = pygame.font.Font(None, 36)
+    pixel_font = pygame.font.Font('grand9k_pixel/grand9k_pixel.ttf', 18)
     clock = pygame.time.Clock()
 
     buttons = []
@@ -153,10 +153,10 @@ def start_pygame_interface(manager, filename):
     def go_back():
         start_menu()
 
-    add_button = Button(170, 550, 100, 32, 'Add Task', add_task_prompt)
-    save_button = Button(300, 550, 100, 32, 'Save Tasks', save_tasks)
-    load_button = Button(430, 550, 100, 32, 'Load Tasks', load_tasks)
-    back_button = Button(560, 550, 100, 32, 'Back', go_back)
+    add_button = Button(170, 550, 100, 32, 'Add Task', add_task_prompt, pixel_font)
+    save_button = Button(300, 550, 100, 32, 'Save Tasks', save_tasks, pixel_font)
+    load_button = Button(430, 550, 100, 32, 'Load Tasks', load_tasks, pixel_font)
+    back_button = Button(560, 550, 100, 32, 'Back', go_back, pixel_font)
 
     while True:
         for event in pygame.event.get():
@@ -177,7 +177,7 @@ def start_pygame_interface(manager, filename):
         buttons = []
         for i, task in enumerate(tasks):
             task_str = f"{i}. {task.title} - {'Complete' if task.complete else 'Incomplete'} - {task.description} - {task.due_date} - {task.priority}"
-            task_text = font.render(task_str, True, (0, 0, 0))
+            task_text = pixel_font.render(task_str, True, (0, 0, 0))
             screen.blit(task_text, (20, 30 + i * 40))
 
             def mark_complete(idx=i):
@@ -186,15 +186,15 @@ def start_pygame_interface(manager, filename):
             def delete_task(idx=i):
                 return lambda: manager.delete_task(idx)
 
-            complete_button = Button(500, 30 + i * 40, 100, 32, 'Complete', mark_complete())
+            complete_button = Button(500, 30 + i * 40, 100, 32, 'Complete', mark_complete(), pixel_font)
             complete_button.draw(screen)
             buttons.append(complete_button)
 
-            delete_button = Button(610, 30 + i * 40, 100, 32, 'Delete', delete_task())
+            delete_button = Button(610, 30 + i * 40, 100, 32, 'Delete', delete_task(), pixel_font)
             delete_button.draw(screen)
             buttons.append(delete_button)
 
-            edit_button = Button(720, 30 + i * 40, 100, 32, 'Edit', lambda idx=i: edit_task_prompt(idx))
+            edit_button = Button(720, 30 + i * 40, 100, 32, 'Edit', lambda idx=i: edit_task_prompt(idx), pixel_font)
             edit_button.draw(screen)
             buttons.append(edit_button)
 
@@ -210,11 +210,11 @@ def task_input_menu(manager, filename):
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption('Add Task')
 
-    font = pygame.font.Font(None, 36)
-    input_box_title = InputBox(300, 100, 200, 50, 'Task Title')
-    input_box_desc = InputBox(300, 200, 200, 50, 'Description')
-    input_box_date = InputBox(300, 300, 200, 50, 'Due Date')
-    input_box_priority = InputBox(300, 400, 200, 50, 'Priority (high, medium, low)')
+    pixel_font = pygame.font.Font('grand9k_pixel/grand9k_pixel.ttf', 18)
+    input_box_title = InputBox(300, 100, 200, 50, 'Task Title', pixel_font)
+    input_box_desc = InputBox(300, 200, 200, 50, 'Description', pixel_font)
+    input_box_date = InputBox(300, 300, 200, 50, 'Due Date', pixel_font)
+    input_box_priority = InputBox(300, 400, 200, 50, 'Priority (high, medium, low)', pixel_font)
     clock = pygame.time.Clock()
 
     def add_task():
@@ -229,8 +229,8 @@ def task_input_menu(manager, filename):
     def cancel():
         start_pygame_interface(manager, filename)
 
-    add_button = Button(300, 500, 200, 50, 'Add Task', add_task)
-    cancel_button = Button(300, 570, 200, 50, 'Cancel', cancel)
+    add_button = Button(300, 500, 200, 50, 'Add Task', add_task, pixel_font)
+    cancel_button = Button(300, 570, 200, 50, 'Cancel', cancel, pixel_font)
 
     while True:
         for event in pygame.event.get():
@@ -267,11 +267,11 @@ def edit_task_menu(manager, filename, task_index):
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption('Edit Task')
 
-    font = pygame.font.Font(None, 36)
-    input_box_title = InputBox(300, 150, 200, 50, task.title)
-    input_box_desc = InputBox(300, 250, 200, 50, task.description)
-    input_box_date = InputBox(300, 350, 200, 50, task.due_date)
-    input_box_priority = InputBox(300, 450, 200, 50, task.priority)
+    pixel_font = pygame.font.Font('grand9k_pixel/grand9k_pixel.ttf', 18)
+    input_box_title = InputBox(300, 150, 200, 50, task.title, pixel_font)
+    input_box_desc = InputBox(300, 250, 200, 50, task.description, pixel_font)
+    input_box_date = InputBox(300, 350, 200, 50, task.due_date, pixel_font)
+    input_box_priority = InputBox(300, 450, 200, 50, task.priority, pixel_font)
     clock = pygame.time.Clock()
 
     def save_task():
@@ -289,8 +289,8 @@ def edit_task_menu(manager, filename, task_index):
     def cancel():
         start_pygame_interface(manager, filename)
 
-    save_button = Button(300, 520, 200, 50, 'Save', save_task)
-    cancel_button = Button(300, 590, 200, 50, 'Cancel', cancel)
+    save_button = Button(300, 520, 200, 50, 'Save', save_task, pixel_font)
+    cancel_button = Button(300, 590, 200, 50, 'Cancel', cancel, pixel_font)
 
     while True:
         for event in pygame.event.get():

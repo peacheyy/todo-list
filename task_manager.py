@@ -5,8 +5,8 @@ class TaskManager:
     def __init__(self):
         self.tasks = []
 
-    def add_task(self, title, description, due_date=None):
-        task = Task(title, description, due_date)
+    def add_task(self, title, description, due_date=None, priority='medium'):
+        task = Task(title, description, due_date, priority)
         self.tasks.append(task)
 
     def delete_task(self, task_index):

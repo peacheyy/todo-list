@@ -4,7 +4,7 @@ class Task:
         self.description = description
         self.due_date = due_date
         self.complete = complete
-        self.priority = priority  # Add priority attribute
+        self.priority = priority
 
     def mark_as_complete(self):
         self.complete = True
@@ -15,7 +15,7 @@ class Task:
             "description": self.description,
             "due_date": self.due_date,
             "complete": self.complete,
-            "priority": self.priority  # Include priority in the dictionary
+            "priority": self.priority
         }
 
     def __str__(self):
