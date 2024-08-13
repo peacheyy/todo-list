@@ -4,6 +4,7 @@ import os
 from task_manager import TaskManager
 from ui_components import InputBox, Button
 
+#test
 def start_menu():
     pygame.init()
     screen = pygame.display.set_mode((800, 600))
