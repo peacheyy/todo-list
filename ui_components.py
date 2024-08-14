@@ -240,7 +240,7 @@ class Dropdown:
                 option_rect = pygame.Rect(self.rect.x, self.rect.y + (i+1)*self.rect.height, self.rect.width, self.rect.height)
                 self.option_rects.append(option_rect)
                 pygame.draw.rect(screen, pygame.Color('white'), option_rect)
-                txt_surface = self.font.render(option, True, pygame.Color('lightskyblue3'))
+                txt_surface = self.font.render(option, True, pygame.Color('black'))
                 screen.blit(txt_surface, (option_rect.x + 5, option_rect.y + 5))
                 pygame.draw.rect(screen, self.color, option_rect, 2)
 

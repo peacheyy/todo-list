@@ -74,9 +74,9 @@ def start_menu():
         pygame.quit()
         sys.exit()
 
-    load_button = Button(300, 200, 200, 50, 'Load To-Do List', load_tasks, pixel_font)
-    new_button = Button(300, 300, 200, 50, 'Create New List', create_new_list, pixel_font)
-    exit_button = Button(300, 400, 200, 50, 'Exit', exit_app, pixel_font)
+    load_button = Button(300, 150, 200, 50, 'Load To-Do List', load_tasks, pixel_font)
+    new_button = Button(300, 250, 200, 50, 'Create New List', create_new_list, pixel_font)
+    exit_button = Button(300, 350, 200, 50, 'Exit', exit_app, pixel_font)
 
     buttons = [load_button, new_button, exit_button]
 
@@ -105,11 +105,31 @@ def file_selection_menu(files, callback):
     clock = pygame.time.Clock()
     buttons = []
 
-    for i, file in enumerate(files):
-        button = Button(300, 200 + i * 50, 200, 50, file[:-5], lambda f=file: callback(f), pixel_font)
-        buttons.append(button)
+    def delete_file(filename):
+        try:
+            os.remove(filename)
+            print(f"Deleted file: {filename}")
+            # Refresh the file list
+            updated_files = [f for f in os.listdir('.') if os.path.isfile(f) and f.endswith('.json')]
+            if not updated_files:
+                start_menu()
+            else:
+                file_selection_menu(updated_files, callback)
+        except OSError as e:
+            print(f"Error deleting file {filename}: {e}")
 
-    back_button = Button(300, 200 + len(files) * 50, 200, 50, 'Back', start_menu, pixel_font)
+    # Calculate the total height of all buttons
+    button_height = 50
+    total_height = len(files) * (button_height + 20)  # 20px extra gap between buttons
+    start_y = (600 - total_height) // 2  # Center the buttons vertically
+
+    for i, file in enumerate(files):
+        y_position = start_y + i * (button_height + 20)
+        load_button = Button(200, y_position, 200, 50, file[:-5], lambda f=file: callback(f), pixel_font)
+        delete_button = Button(420, y_position, 100, 50, 'Delete', lambda f=file: delete_file(f), pixel_font)
+        buttons.extend([load_button, delete_button])
+
+    back_button = Button(300, 530, 200, 50, 'Back', start_menu, pixel_font)
     buttons.append(back_button)
 
     while True:
@@ -127,7 +147,7 @@ def file_selection_menu(files, callback):
 
         pygame.display.flip()
         clock.tick(30)
-
+        
 def task_input_menu(manager, filename):
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption('Add Task')
@@ -136,7 +156,7 @@ def task_input_menu(manager, filename):
     
     title_input = InputBox(50, 50, 200, 50, 'Task Title', pixel_font)
     description_input = InputBox(50, 120, 200, 50, 'Description', pixel_font)
-    due_date_picker = DatePicker(300, 50, 200, 50, pixel_font)  # Moved to right side
+    due_date_picker = DatePicker(300, 50, 200, 50, pixel_font)
     priority_dropdown = Dropdown(50, 190, 200, 50, ['low', 'medium', 'high'], pixel_font)
 
     def add_task():
@@ -151,8 +171,8 @@ def task_input_menu(manager, filename):
     def cancel():
         start_pygame_interface(manager, filename)
 
-    add_button = Button(50, 260, 200, 50, 'Add Task', add_task, pixel_font)
-    cancel_button = Button(50, 330, 200, 50, 'Cancel', cancel, pixel_font)
+    add_button = Button(50, 420, 200, 50, 'Add Task', add_task, pixel_font)
+    cancel_button = Button(50, 490, 200, 50, 'Cancel', cancel, pixel_font)
 
     clock = pygame.time.Clock()
 
@@ -198,7 +218,7 @@ def edit_task_menu(manager, filename, task_index):
 
     title_input = InputBox(50, 50, 200, 50, task.title, pixel_font)
     description_input = InputBox(50, 120, 200, 50, task.description, pixel_font)
-    due_date_picker = DatePicker(300, 50, 200, 50, pixel_font)  # Moved to right side
+    due_date_picker = DatePicker(300, 50, 200, 50, pixel_font)
     
     if task.due_date:
         try:
@@ -264,6 +284,7 @@ def edit_task_menu(manager, filename, task_index):
         pygame.display.flip()
         clock.tick(30)
 
+
 def start_pygame_interface(manager, filename):
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption('Task Manager')
@@ -271,14 +292,8 @@ def start_pygame_interface(manager, filename):
     pixel_font = pygame.font.Font('grand9k_pixel/grand9k_pixel.ttf', 18)
     clock = pygame.time.Clock()
 
-    buttons = []
-    ui_components = []
-
     def add_task_prompt():
         task_input_menu(manager, filename)
-
-    def edit_task_prompt(task_index):
-        edit_task_menu(manager, filename, task_index)
 
     def save_tasks():
         manager.save_tasks(filename)
@@ -287,14 +302,12 @@ def start_pygame_interface(manager, filename):
     def go_back():
         start_menu()
 
+    def view_task_details(task_index):
+        task_detail_screen(manager, filename, task_index)
+
     add_button = Button(20, 550, 120, 32, 'Add Task', add_task_prompt, pixel_font)
     save_button = Button(150, 550, 120, 32, 'Save Tasks', save_tasks, pixel_font)
     back_button = Button(280, 550, 120, 32, 'Back', go_back, pixel_font)
-
-    def truncate_text(text, max_width):
-        while pixel_font.size(text)[0] > max_width:
-            text = text[:-1]
-        return text + '...' if len(text) < len(text) else text
 
     while True:
         for event in pygame.event.get():
@@ -305,65 +318,86 @@ def start_pygame_interface(manager, filename):
             add_button.handle_event(event)
             save_button.handle_event(event)
             back_button.handle_event(event)
-            for component in ui_components:
-                if component.handle_event(event):
-                    # If a component handles the event, bring it to the front
-                    ui_components.remove(component)
-                    ui_components.append(component)
-                    break
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for i, task in enumerate(manager.tasks):
+                    y_pos = 30 + i * 40
+                    task_button_rect = pygame.Rect(20, y_pos, 760, 32)
+                    if task_button_rect.collidepoint(event.pos):
+                        view_task_details(i)
 
         screen.fill((255, 255, 255))
 
-        tasks = manager.tasks
-        buttons = []
-        ui_components = []
-        for i, task in enumerate(tasks):
-            y_pos = 30 + i * 60
-
-            title = truncate_text(f"Title: {task.title}", 200)
-            description = truncate_text(f"Desc: {task.description}", 200)
-            due_date = truncate_text(f"Due: {task.due_date}", 150)
-            priority = truncate_text(f"Priority: {task.priority}", 150)
-            status = 'Complete' if task.complete else 'Incomplete'
-
-            task_text = pixel_font.render(title, True, (0, 0, 0))
-            screen.blit(task_text, (20, y_pos))
-            task_text = pixel_font.render(description, True, (0, 0, 0))
-            screen.blit(task_text, (20, y_pos + 20))
-            task_text = pixel_font.render(due_date, True, (0, 0, 0))
-            screen.blit(task_text, (250, y_pos))
-            task_text = pixel_font.render(priority, True, (0, 0, 0))
-            screen.blit(task_text, (250, y_pos + 20))
-            task_text = pixel_font.render(status, True, (0, 0, 0))
-            screen.blit(task_text, (430, y_pos))
-
-            def mark_complete(idx=i):
-                return lambda: manager.mark_task_complete(idx)
-
-            def delete_task(idx=i):
-                return lambda: manager.delete_task(idx)
-
-            complete_button = Button(500, y_pos, 80, 25, 'Complete', mark_complete(), pixel_font)
-            delete_button = Button(590, y_pos, 80, 25, 'Delete', delete_task(), pixel_font)
-            edit_button = Button(680, y_pos, 80, 25, 'Edit', lambda idx=i: edit_task_prompt(idx), pixel_font)
-            
-            buttons.extend([complete_button, delete_button, edit_button])
-
-            date_picker = DatePicker(250, y_pos, 150, 25, pixel_font)
-            priority_dropdown = Dropdown(250, y_pos + 20, 150, 25, ['low', 'medium', 'high'], pixel_font)
-            
-            ui_components.extend([date_picker, priority_dropdown])
-
-        for button in buttons:
-            button.draw(screen)
+        for i, task in enumerate(manager.tasks):
+            y_pos = 30 + i * 40
+            task_button = Button(20, y_pos, 760, 32, task.title, lambda idx=i: view_task_details(idx), pixel_font)
+            task_button.draw(screen)
 
         add_button.draw(screen)
         save_button.draw(screen)
         back_button.draw(screen)
 
-        # Draw UI components in order (last is on top)
-        for component in ui_components:
-            component.draw(screen)
+        pygame.display.flip()
+        clock.tick(30)
+
+def task_detail_screen(manager, filename, task_index):
+    screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption('Task Details')
+
+    pixel_font = pygame.font.Font('grand9k_pixel/grand9k_pixel.ttf', 18)
+    clock = pygame.time.Clock()
+
+    task = manager.tasks[task_index]
+
+    def save_task():
+        manager.save_tasks(filename)
+        print(f"Tasks saved to {filename}")
+
+    def edit_task():
+        edit_task_menu(manager, filename, task_index)
+
+    def delete_task():
+        manager.delete_task(task_index)
+        start_pygame_interface(manager, filename)
+
+    def go_back():
+        start_pygame_interface(manager, filename)
+
+    save_button = Button(20, 550, 120, 32, 'Save', save_task, pixel_font)
+    edit_button = Button(150, 550, 120, 32, 'Edit', edit_task, pixel_font)
+    delete_button = Button(280, 550, 120, 32, 'Delete', delete_task, pixel_font)
+    back_button = Button(410, 550, 120, 32, 'Back', go_back, pixel_font)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            save_button.handle_event(event)
+            edit_button.handle_event(event)
+            delete_button.handle_event(event)
+            back_button.handle_event(event)
+
+        screen.fill((255, 255, 255))
+
+        # Display task details
+        title_text = pixel_font.render(f"Title: {task.title}", True, (0, 0, 0))
+        description_text = pixel_font.render(f"Description: {task.description}", True, (0, 0, 0))
+        due_date_text = pixel_font.render(f"Due Date: {task.due_date}", True, (0, 0, 0))
+        priority_text = pixel_font.render(f"Priority: {task.priority}", True, (0, 0, 0))
+        status_text = pixel_font.render(f"Status: {'Complete' if task.complete else 'Incomplete'}", True, (0, 0, 0))
+
+        screen.blit(title_text, (20, 30))
+        screen.blit(description_text, (20, 70))
+        screen.blit(due_date_text, (20, 110))
+        screen.blit(priority_text, (20, 150))
+        screen.blit(status_text, (20, 190))
+
+        save_button.draw(screen)
+        edit_button.draw(screen)
+        delete_button.draw(screen)
+        back_button.draw(screen)
 
         pygame.display.flip()
         clock.tick(30)
